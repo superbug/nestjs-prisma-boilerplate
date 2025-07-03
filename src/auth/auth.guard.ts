@@ -5,7 +5,6 @@ import type {
 } from '@nestjs/common';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { GqlExecutionContext } from '@nestjs/graphql';
 import { Socket } from 'socket.io';
 
 import {
@@ -27,7 +26,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   /**
-   * Validates if the current request is authenticated for all REST, GraphQL & Websockets
+   * Validates if the current request is authenticated for all REST & Websockets
    * Attaches session and user information to the request object
    * @param context - The execution context of the current request
    * @returns True if the request is authorized to proceed, throws an error otherwise
@@ -40,7 +39,7 @@ export class AuthGuard implements CanActivate {
 
     if (isAuthPublic) return true;
 
-    const contextType: ContextType & 'graphql' = context.getType();
+    const contextType: ContextType = context.getType();
 
     if (contextType === 'ws') {
       const socket = context.switchToWs().getClient<Socket>();
@@ -58,12 +57,7 @@ export class AuthGuard implements CanActivate {
 
     let request: FastifyRequest;
 
-    if (contextType === 'graphql') {
-      const gqlCtx = GqlExecutionContext.create(context);
-      request = gqlCtx.getContext()?.req;
-    } else {
-      request = context.switchToHttp().getRequest();
-    }
+    request = context.switchToHttp().getRequest();
 
     const session = await this.auth.api.getSession({
       headers: fromNodeHeaders(request?.headers),

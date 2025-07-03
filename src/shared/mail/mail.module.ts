@@ -1,11 +1,10 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { UserEntity } from '@/auth/entities/user.entity';
 import useMailFactory from '../../config/mail/mail.factory';
 import { MailService } from './mail.service';
+import { PrismaModule } from '@/database/prisma.module';
 
 @Global()
 @Module({
@@ -15,7 +14,7 @@ import { MailService } from './mail.service';
       inject: [ConfigService],
       useFactory: useMailFactory,
     }),
-    TypeOrmModule.forFeature([UserEntity]),
+    PrismaModule
   ],
   providers: [MailService],
   exports: [MailService],

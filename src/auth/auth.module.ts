@@ -27,7 +27,6 @@ import { Queue } from '@/constants/job.constant';
 import { CacheModule } from '@/shared/cache/cache.module';
 import { CacheService } from '@/shared/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { createAuthMiddleware } from 'better-auth/plugins';
 import type {
   FastifyInstance,
@@ -36,7 +35,8 @@ import type {
 } from 'fastify';
 import { AuthService } from './auth.service';
 import { BetterAuthService } from './better-auth.service';
-import { UserEntity } from './entities/user.entity';
+import { PrismaService } from '@/database/prisma.service';
+import { PrismaModule } from '@/database/prisma.module';
 
 const HOOKS = [
   { metadataKey: BEFORE_HOOK_KEY, hookType: 'before' as const },
@@ -54,7 +54,7 @@ const HOOKS = [
       name: Queue.Email,
       adapter: BullMQAdapter,
     }),
-    TypeOrmModule.forFeature([UserEntity]),
+    PrismaModule,
   ],
   providers: [AuthService],
   exports: [AuthService],
@@ -179,15 +179,17 @@ export class AuthModule implements NestModule, OnModuleInit {
             cacheService: CacheService,
             configService: ConfigService<GlobalConfig>,
             authService: AuthService,
+            prismaService: PrismaService,
           ) => {
             const config = getBetterAuthConfig({
               cacheService,
               configService,
               authService,
+              prismaService
             });
             return betterAuth(config);
           },
-          inject: [CacheService, ConfigService, AuthService],
+          inject: [CacheService, ConfigService, AuthService, PrismaService],
         },
         BetterAuthService,
       ],

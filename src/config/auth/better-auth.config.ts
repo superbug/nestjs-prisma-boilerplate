@@ -4,11 +4,12 @@ import { CacheService } from '@/shared/cache/cache.service';
 import { validateUsername } from '@/utils/validators/username';
 import { ConfigService } from '@nestjs/config';
 import { APIError } from 'better-auth/api';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { magicLink, openAPI, twoFactor, username } from 'better-auth/plugins';
 import { passkey } from 'better-auth/plugins/passkey';
 import { BetterAuthOptions, BetterAuthPlugin } from 'better-auth/types';
-import { Pool } from 'pg';
 import { v4 as uuid } from 'uuid';
+import { PrismaService } from '@/database/prisma.service';
 
 /**
  * Better Auth Configuration
@@ -19,10 +20,12 @@ export function getConfig({
   configService,
   cacheService,
   authService,
+  prismaService
 }: {
   configService: ConfigService<GlobalConfig>;
   cacheService: CacheService;
   authService: AuthService;
+  prismaService: PrismaService;
 }): BetterAuthOptions {
   const appConfig = configService.getOrThrow('app', { infer: true });
   const databaseConfig = configService.getOrThrow('database', { infer: true });
@@ -61,22 +64,8 @@ export function getConfig({
     secret: authConfig.authSecret,
     baseURL: appConfig.url,
     plugins,
-    database: new Pool({
-      database: databaseConfig.database,
-      user: databaseConfig.username,
-      password: databaseConfig.password,
-      host: databaseConfig.host,
-      port: databaseConfig.port,
-      ...(typeof databaseConfig.ssl === 'object'
-        ? {
-            ssl: {
-              rejectUnauthorized: databaseConfig.ssl?.rejectUnauthorized,
-              ca: databaseConfig.ssl?.ca,
-              key: databaseConfig.ssl?.key,
-              cert: databaseConfig.ssl?.cert,
-            },
-          }
-        : {}),
+    database: prismaAdapter(prismaService,{
+        provider: 'postgresql'
     }),
     emailAndPassword: {
       enabled: true,
@@ -95,20 +84,12 @@ export function getConfig({
     },
     session: {
       freshAge: 0, // We perform every sensitive operation via our own API so this is irrelevant.
-      modelName: 'session',
     },
     user: {
-      modelName: 'user',
       fields: {
         name: 'firstName',
         emailVerified: 'isEmailVerified',
       },
-    },
-    account: {
-      modelName: 'account',
-    },
-    verification: {
-      modelName: 'verification',
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {

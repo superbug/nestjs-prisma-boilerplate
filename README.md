@@ -1,11 +1,13 @@
-# Ultimate Nest.js Boilerplate ⚡
+# Nest.js Boilerplate Prisma ⚡
 
 Advanced Nest.js boilerplate for scalable startups.
+This boilerplate is extended from [ultimate-nestjs-boilerplate](https://github.com/niraj-khatiwada/ultimate-nestjs-boilerplate)
+
 
 ## Features📦
 
 - [x] Nest.js with Fastify
-- [x] PostgreSQL with TypeORM
+- [x] PostgreSQL with Prisma ORM
 - [x] [Better Auth](https://www.better-auth.com/) for complete authentication. Handles authentication kinds like email/password, OAuth, Magic Link, Pass Keys, Two-Factor Authentication, Session Management, etc. [Learn More](#better-auth)
 - [x] REST, GraphQL & WebSocket API
 - [x] Websocket using Socket.io via Redis Adapter(For future scalability with clusters)
@@ -29,8 +31,6 @@ Advanced Nest.js boilerplate for scalable startups.
 - [x] Github Actions
 - [x] Commitlint & Husky
 - [x] SWC instead of Webpack
-- [x] Dependency Graph Visualizer [Learn More](#dependency-graph-)
-- [x] Database Entity Relationship Diagram Generator [Learn More](#database-entity-relationship-diagram️)
 
 ## Development:
 
@@ -163,38 +163,3 @@ After that, just visit `http://localhost:<DOCKER_MAIL_CLIENT_PORT>`. You can fin
 
 <img src="./github-assets/mailpit.png" />
 
-### Dependency Graph 📈
-
-Visualize all of your project modules and their dependencies. Also, detect circular dependencies.
-
-NOTE: Make sure [Graphviz](https://www.graphviz.org/) is installed first.
-
-- All dependencies:
-
-```
-pnpm graph:app
-```
-
-- Only circular dependencies:
-
-```
-pnpm graph:circular
-```
-
-<figure>
-<img src="./github-assets/graph.png" />
-</figure>
-
-### Database Entity Relationship Diagram🛢️
-
-Visualize your database entities and their relationships.
-
-```
-pnpm erd:generate
-```
-
-<figure>
-<img src="./github-assets/erd.png"  />
-</figure>
-
-This boilerplate is extended from [nestjs-boilerplate](https://github.com/vndevteam/nestjs-boilerplate?tab=readme-ov-file)

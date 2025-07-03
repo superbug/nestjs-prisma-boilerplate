@@ -4,14 +4,14 @@ FROM ${NODE_IMAGE} AS base
 
 RUN apt-get update && apt-get install -y procps
 
-RUN npm install -g pnpm@9.12.2
+RUN npm install -g pnpm@10.12.3
 
 # Development stage
 FROM base AS development
 WORKDIR /app
 RUN chown -R node:node /app
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
+COPY --chown=node:node package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install all dependencies (including devDependencies)
 RUN pnpm fetch --frozen-lockfile
@@ -27,7 +27,7 @@ USER node
 FROM base AS builder
 WORKDIR /app
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
+COPY --chown=node:node package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=node:node --from=development /app/node_modules ./node_modules
 COPY --chown=node:node --from=development /app/src ./src
 COPY --chown=node:node --from=development /app/scripts ./scripts
@@ -36,12 +36,13 @@ COPY --chown=node:node --from=development /app/tsconfig.build.json ./tsconfig.bu
 COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 COPY --chown=node:node --from=development /app/.env ./.env
 
+RUN pnpm prisma:generate
 # Build server
 RUN pnpm build
 
 # Run migrations & seeds
-RUN pnpm migration:up
-RUN pnpm seed:run
+RUN pnpm prisma:migrate:deploy
+# RUN pnpm prisma:seed
 
 # Removes unnecessary packages and re-install only production dependencies
 ENV NODE_ENV production

@@ -1,17 +1,17 @@
 services:
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    volumes:
-      - /app/node_modules
-      - .:/app
-    depends_on:
-      - database
-      - redis
-      - mail
-    command: >
-      sh -c "pnpm start:dev"
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #   volumes:
+  #     - /app/node_modules
+  #     - .:/app
+  #   depends_on:
+  #     - database
+  #     - redis
+  #     - mail
+  #   command: >
+  #     sh -c "pnpm start:dev"
 
   worker:
     build:

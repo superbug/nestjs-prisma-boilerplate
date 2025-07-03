@@ -5,10 +5,11 @@ import {
   HealthCheckService,
   HttpHealthIndicator,
   MicroserviceHealthIndicator,
-  TypeOrmHealthIndicator,
+  PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from './health.controller';
+import { PrismaService } from '@/database/prisma.service';
 
 describe('HealthController', () => {
   let controller: HealthController;
@@ -20,7 +21,8 @@ describe('HealthController', () => {
     Record<keyof HealthCheckService, jest.Mock>
   >;
   let httpUseValue: Partial<Record<keyof HttpHealthIndicator, jest.Mock>>;
-  let dbUseValue: Partial<Record<keyof TypeOrmHealthIndicator, jest.Mock>>;
+  let dbUseValue: Partial<Record<keyof PrismaHealthIndicator, jest.Mock>>;
+  let prismaServiceValue: Partial<Record<keyof PrismaService, jest.Mock>>;
   let microServiceValue: Partial<
     Record<keyof MicroserviceHealthIndicator, jest.Mock>
   >;
@@ -51,6 +53,15 @@ describe('HealthController', () => {
       createBasicAuthHeaders: jest.fn(),
     };
 
+    prismaServiceValue = {
+        $queryRawUnsafe: jest.fn(),
+        $connect: jest.fn(),
+        $disconnect: jest.fn(),
+        $on: jest.fn(),
+        $use: jest.fn(),
+        $executeRawUnsafe: jest.fn(),
+        $transaction: jest.fn(),    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HealthController],
       providers: [
@@ -67,7 +78,7 @@ describe('HealthController', () => {
           useValue: httpUseValue,
         },
         {
-          provide: TypeOrmHealthIndicator,
+          provide: PrismaHealthIndicator,
           useValue: dbUseValue,
         },
         {
@@ -78,6 +89,10 @@ describe('HealthController', () => {
           provide: AuthService,
           useValue: authServiceValue,
         },
+        {
+            provide: PrismaService,
+            useValue: prismaServiceValue,
+        }
       ],
     }).compile();
 

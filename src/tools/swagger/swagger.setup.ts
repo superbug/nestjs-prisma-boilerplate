@@ -12,7 +12,7 @@ function setupSwagger(app: INestApplication): OpenAPIObject {
   const config = new DocumentBuilder()
     .setTitle(appName)
     .setDescription(
-      `<p>Ultimate Nest.js Boilerplate.</p>
+      `<p>Nest.js Boilerplate Prisma.</p>
       <p>Click <a href="/api/auth/reference">here</a> to see authentication API's.</p>`,
     )
     .setVersion('1.0')

@@ -1,18 +1,18 @@
 services:
-  server:
-    container_name: nestjs-boilerplate-server
-    image: nestjs-boilerplate-server:latest
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - IS_WORKER=false
-    ports:
-      - '${APP_PORT}:${APP_PORT}'
-    networks:
-      - nestjs-boilerplate-network
-    depends_on:
-      - redis
+  # server:
+  #   container_name: nestjs-boilerplate-server
+  #   image: nestjs-boilerplate-server:latest
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - IS_WORKER=false
+  #   ports:
+  #     - '${APP_PORT}:${APP_PORT}'
+  #   networks:
+  #     - nestjs-boilerplate-network
+  #   depends_on:
+  #     - redis
 
   worker:
     container_name: nestjs-boilerplate-worker
@@ -22,6 +22,11 @@ services:
       - .env
     environment:
       - IS_WORKER=true
+      - REDIS_PORT=6379
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/nestjs_api
+      - REDIS_HOST=redis
+      - MAIL_HOST=mail
+      - MAIL_PORT=1025
     ports:
       - '${APP_WORKER_PORT}:${APP_WORKER_PORT}'
     networks:

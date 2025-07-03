@@ -1,5 +1,6 @@
 import { GlobalConfig } from '@/config/config.type';
 import { Queue } from '@/constants/job.constant';
+import { PrismaService } from '@/database/prisma.service';
 import { CacheService } from '@/shared/cache/cache.service';
 import { CacheParam } from '@/shared/cache/cache.type';
 import { EmailQueue } from '@/worker/queues/email/email.type';
@@ -11,9 +12,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserEntity } from './entities/user.entity';
 
 /**
  * NOTE: This service is for handling auth related tasks outside of Better Auth.
@@ -26,14 +24,14 @@ export class AuthService {
     @InjectQueue(Queue.Email)
     private readonly emailQueue: EmailQueue,
     private readonly cacheService: CacheService,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly prisma: PrismaService,
   ) {}
 
   async sendSigninMagicLink({ email, url }: { email: string; url: string }) {
-    const user = await this.userRepository.findOne({
+    const user = await this.prisma.user.findFirst({
       where: {
         email,
+        deletedAt: null,
       },
       select: {
         id: true,

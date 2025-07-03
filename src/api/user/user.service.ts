@@ -1,17 +1,14 @@
 import { BetterAuthService } from '@/auth/better-auth.service';
-import { UserEntity } from '@/auth/entities/user.entity';
 import { CursorPaginationDto } from '@/common/dto/cursor-pagination/cursor-pagination.dto';
 import { CursorPaginatedDto } from '@/common/dto/cursor-pagination/paginated.dto';
+import { OffsetPaginationDto } from '@/common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@/common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@/common/types/common.type';
 import { CurrentUserSession } from '@/decorators/auth/current-user-session.decorator';
+import { PrismaService } from '@/database/prisma.service';
 import { I18nTranslations } from '@/generated/i18n.generated';
-import { buildPaginator } from '@/utils/pagination/cursor-pagination';
-import { paginate } from '@/utils/pagination/offset-pagination';
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import {
   QueryUsersCursorDto,
@@ -23,74 +20,115 @@ import {
 export class UserService {
   constructor(
     private readonly i18nService: I18nService<I18nTranslations>,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly prisma: PrismaService,
     private readonly betterAuthService: BetterAuthService,
   ) {}
 
   async findAllUsers(
     dto: QueryUsersOffsetDto,
   ): Promise<OffsetPaginatedDto<UserDto>> {
-    const query = this.userRepository
-      .createQueryBuilder('user')
-      .orderBy('user.createdAt', 'DESC');
-    const [users, metaDto] = await paginate<UserEntity>(query, dto, {
-      skipCount: false,
-      takeAll: false,
-    });
-    return new OffsetPaginatedDto(users, metaDto);
+    const { limit = 10, page = 1 } = dto;
+    const offset = (page - 1) * limit;
+    
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.user.count({
+        where: { deletedAt: null },
+      }),
+    ]);
+
+    const paginationDto = new OffsetPaginationDto(total, dto);
+    return new OffsetPaginatedDto(users as UserDto[], paginationDto);
   }
 
   async findAllUsersCursor(
     reqDto: QueryUsersCursorDto,
   ): Promise<CursorPaginatedDto<UserDto>> {
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
-    const paginator = buildPaginator({
-      entity: UserEntity,
-      alias: 'user',
-      paginationKeys: ['createdAt'],
-      query: {
-        limit: reqDto.limit,
-        order: 'DESC',
-        afterCursor: reqDto.afterCursor,
-        beforeCursor: reqDto.beforeCursor,
-      },
+    const { limit = 10, afterCursor, beforeCursor } = reqDto;
+    
+    const whereCondition: any = { deletedAt: null };
+    
+    if (afterCursor) {
+      whereCondition.createdAt = { lt: new Date(afterCursor) };
+    } else if (beforeCursor) {
+      whereCondition.createdAt = { gt: new Date(beforeCursor) };
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: whereCondition,
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1, // Get one extra to check if there are more
     });
 
-    const { data, cursor } = await paginator.paginate(queryBuilder);
+    const hasNext = users.length > limit;
+    const hasPrevious = !!afterCursor;
+    
+    if (hasNext) {
+      users.pop(); // Remove the extra user
+    }
+
+    const newAfterCursor = users.length > 0 ? users[users.length - 1].createdAt.toISOString() : null;
+    const newBeforeCursor = users.length > 0 ? users[0].createdAt.toISOString() : null;
 
     const metaDto = new CursorPaginationDto(
-      data.length,
-      cursor.afterCursor,
-      cursor.beforeCursor,
+      users.length,
+      hasNext ? newAfterCursor : null,
+      hasPrevious ? newBeforeCursor : null,
       reqDto,
     );
 
-    return new CursorPaginatedDto(data, metaDto);
+    return new CursorPaginatedDto(users as UserDto[], metaDto);
   }
 
   async findOneUser(
     id: Uuid | string,
-    options?: FindOneOptions<UserEntity>,
+    options?: { include?: any },
   ): Promise<UserDto> {
-    const user = await this.userRepository.findOne({
-      where: { id, ...(options?.where ?? {}) },
-      ...(options ?? {}),
+    const user = await this.prisma.user.findFirst({
+      where: { 
+        id, 
+        deletedAt: null 
+      },
+      ...options,
     });
+    
     if (!user) {
       throw new NotFoundException(this.i18nService.t('user.notFound'));
     }
-    return user;
+    
+    return user as UserDto;
   }
 
   async deleteUser(id: Uuid | string) {
-    await this.userRepository.findOneByOrFail({ id });
-    await this.userRepository.softDelete(id);
+    const user = await this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
+    
+    if (!user) {
+      throw new NotFoundException(this.i18nService.t('user.notFound'));
+    }
+    
+    await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+    
     return HttpStatus.OK;
   }
 
-  async getAllUsers(options?: FindManyOptions<UserEntity>) {
-    return this.userRepository.find(options);
+  async getAllUsers(options?: { include?: any; where?: any }) {
+    return this.prisma.user.findMany({
+      where: { 
+        deletedAt: null,
+        ...options?.where,
+      },
+      ...options,
+    });
   }
 
   async updateUserProfile(
@@ -101,9 +139,7 @@ export class UserService {
     let shouldChangeUsername = !(dto.username == null);
 
     if (shouldChangeUsername) {
-      const user = await this.findOneUser(userId, {
-        select: { id: true, username: true },
-      });
+      const user = await this.findOneUser(userId);
       shouldChangeUsername = user?.username !== dto.username;
     }
 
@@ -116,10 +152,14 @@ export class UserService {
     });
 
     // Update rest of the fields manually
-    await this.userRepository.update(userId, {
-      firstName: dto.firstName,
-      lastName: dto.lastName,
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+      },
     });
+    
     return await this.findOneUser(userId);
   }
 }

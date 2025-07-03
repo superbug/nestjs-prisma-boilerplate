@@ -14,9 +14,10 @@ import {
   HealthCheckService,
   HttpHealthIndicator,
   MicroserviceHealthIndicator,
-  TypeOrmHealthIndicator,
+  PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import { HealthCheckDto } from './dto/health.dto';
+import { PrismaService } from '@/database/prisma.service';
 
 @ApiTags('health')
 @Controller('health')
@@ -25,9 +26,10 @@ export class HealthController {
     private readonly configService: ConfigService<GlobalConfig>,
     private readonly health: HealthCheckService,
     private readonly http: HttpHealthIndicator,
-    private readonly db: TypeOrmHealthIndicator,
+    private readonly db: PrismaHealthIndicator,
     private readonly microservice: MicroserviceHealthIndicator,
     private readonly authService: AuthService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   @Public()
@@ -45,7 +47,9 @@ export class HealthController {
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
     const list = [
-      () => this.db.pingCheck('database', { timeout: 5000 }),
+      () => this.db.pingCheck('database', this.prismaService, {
+        timeout: 5000,
+      }),
       () =>
         this.microservice.pingCheck<RedisOptions>('redis', {
           transport: Transport.REDIS,
