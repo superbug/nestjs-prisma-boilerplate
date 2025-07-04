@@ -29,7 +29,7 @@ export class CacheService {
     keyParams: CacheParam,
     options?: { disableResponseFilter?: false },
   ): Promise<number | null> {
-    const ttl = await this.cacheManager.store.ttl(
+    const ttl = await this.cacheManager.ttl(
       this._constructCacheKey(keyParams),
     );
 
@@ -55,7 +55,7 @@ export class CacheService {
   }
 
   async storeGet<T>(keyParams: CacheParam) {
-    return this.cacheManager.store.get<T>(this._constructCacheKey(keyParams));
+    return this.cacheManager.get<T>(this._constructCacheKey(keyParams));
   }
 
   async storeSet<T>(
@@ -69,7 +69,7 @@ export class CacheService {
     },
   ): Promise<{ key: string }> {
     const key = this._constructCacheKey(keyParams);
-    await this.cacheManager.store.set<T>(
+    await this.cacheManager.set<T>(
       this._constructCacheKey(keyParams),
       value,
       options?.ttl,
@@ -79,7 +79,7 @@ export class CacheService {
 
   async delete(keyParams: CacheParam): Promise<{ key: string }> {
     const key = this._constructCacheKey(keyParams);
-    await this.cacheManager.store.del(key);
+    await this.cacheManager.del(key);
     return { key };
   }
 

@@ -4,7 +4,6 @@ import databaseConfig from '@/config/database/database.config';
 import mailConfig from '@/config/mail/mail.config';
 import redisConfig from '@/config/redis/redis.config';
 import { BullBoardModule } from '@bull-board/nestjs';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bullmq';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';

@@ -46,7 +46,7 @@ export class HealthController {
   @Get()
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
-    const list = [
+    const list: Array<() => Promise<any>> = [
       () => this.db.pingCheck('database', this.prismaService, {
         timeout: 5000,
       }),

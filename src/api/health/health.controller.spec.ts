@@ -31,6 +31,7 @@ describe('HealthController', () => {
   beforeAll(async () => {
     configServiceValue = {
       get: jest.fn(),
+      getOrThrow: jest.fn(),
     };
 
     healthCheckServiceValue = {
@@ -60,7 +61,8 @@ describe('HealthController', () => {
         $on: jest.fn(),
         $use: jest.fn(),
         $executeRawUnsafe: jest.fn(),
-        $transaction: jest.fn(),    };
+        $transaction: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HealthController],

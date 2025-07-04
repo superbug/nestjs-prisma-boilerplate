@@ -1,21 +1,25 @@
 import { GlobalConfig } from '@/config/config.type';
 import { ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-ioredis-yet';
+import KeyvRedis from '@keyv/redis';
 
 async function useCacheFactory(config: ConfigService<GlobalConfig>) {
+    const username = config.get<string>('redis.username', { infer: true });
+    const password = config.get<string>('redis.password', { infer: true });
+    const host = config.get<string>('redis.host', { infer: true });
+    const port = config.get<number>('redis.port', { infer: true });
   return {
-    store: await redisStore({
-      host: config.getOrThrow('redis.host', {
-        infer: true,
-      }),
-      port: config.getOrThrow('redis.port', {
-        infer: true,
-      }),
-      password: config.getOrThrow('redis.password', {
-        infer: true,
-      }),
-      tls: config.get('redis.tls', { infer: true }),
-    }),
+    stores: [
+        new KeyvRedis({
+            username: username || undefined,
+            password: password || undefined,
+            socket: {
+                host,
+                port,
+                tls: config.get<boolean>('redis.tls', { infer: true }),
+            },
+            
+        })
+    ]
   };
 }
 

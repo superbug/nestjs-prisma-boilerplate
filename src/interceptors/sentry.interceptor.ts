@@ -15,11 +15,30 @@ const enableSentry = (err: Error, context: ExecutionContext) => {
   if (err instanceof HttpException) {
     return throwError(() => err);
   }
-
+  
   Sentry.withScope((scope) => {
-    scope.addEventProcessor(async (event) =>
-      Sentry.addRequestDataToEvent(event, context.getArgs()[0]),
-    );
+    const request = context.getArgs()[0];
+    
+    // Add request context
+    if (request) {
+      scope.setContext('request', {
+        url: request.url,
+        method: request.method,
+        headers: request.headers,
+        query: request.query,
+        body: request.body,
+        ip: request.ip,
+        userAgent: request.headers?.['user-agent'],
+      });
+    }
+
+    // Add execution context
+    scope.setContext('execution', {
+      type: context.getType(),
+      handler: context.getHandler()?.name,
+      class: context.getClass()?.name,
+    });
+
     Sentry.captureException(err);
   });
 
