@@ -1,6 +1,7 @@
 import { AuthService } from '@/auth/auth.service';
 import { ErrorDto } from '@/common/dto/error.dto';
 import { GlobalConfig } from '@/config/config.type';
+import { PrismaService } from '@/database/prisma.service';
 import { Public } from '@/decorators/public.decorator';
 import { SWAGGER_PATH } from '@/tools/swagger/swagger.setup';
 import { Serialize } from '@/utils/interceptors/serialize';
@@ -17,7 +18,6 @@ import {
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
 import { HealthCheckDto } from './dto/health.dto';
-import { PrismaService } from '@/database/prisma.service';
 
 @ApiTags('health')
 @Controller('health')
@@ -47,9 +47,10 @@ export class HealthController {
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
     const list: Array<() => Promise<any>> = [
-      () => this.db.pingCheck('database', this.prismaService, {
-        timeout: 5000,
-      }),
+      () =>
+        this.db.pingCheck('database', this.prismaService, {
+          timeout: 5000,
+        }),
       () =>
         this.microservice.pingCheck<RedisOptions>('redis', {
           transport: Transport.REDIS,

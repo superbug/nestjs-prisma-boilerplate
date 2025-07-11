@@ -1,5 +1,5 @@
-import { MailService } from '@/shared/mail/mail.service';
 import { PrismaService } from '@/database/prisma.service';
+import { MailService } from '@/shared/mail/mail.service';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   EmailVerificationJob,

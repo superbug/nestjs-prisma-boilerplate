@@ -66,7 +66,9 @@ export function NumberField(
   }
 
   if (options.swagger !== false) {
-    decorators.push(ApiProperty({ type: Number, ...options as ApiPropertyOptions }));
+    decorators.push(
+      ApiProperty({ type: Number, ...(options as ApiPropertyOptions) }),
+    );
   }
 
   if (options.int) {
@@ -113,7 +115,11 @@ export function StringField(
 
   if (options.swagger !== false) {
     decorators.push(
-      ApiProperty({ type: String, ...options as ApiPropertyOptions, isArray: options.each }),
+      ApiProperty({
+        type: String,
+        ...(options as ApiPropertyOptions),
+        isArray: options.each,
+      }),
     );
   }
 
@@ -149,7 +155,11 @@ export function TokenField(
 
   if (options.swagger !== false) {
     decorators.push(
-      ApiProperty({ type: String, ...options as ApiPropertyOptions, isArray: options.each }),
+      ApiProperty({
+        type: String,
+        ...(options as ApiPropertyOptions),
+        isArray: options.each,
+      }),
     );
   }
 
@@ -203,7 +213,9 @@ export function BooleanField(
   }
 
   if (options.swagger !== false) {
-    decorators.push(ApiProperty({ type: Boolean, ...options as ApiPropertyOptions }));
+    decorators.push(
+      ApiProperty({ type: Boolean, ...(options as ApiPropertyOptions) }),
+    );
   }
 
   return applyDecorators(...decorators);
@@ -235,7 +247,9 @@ export function EmailField(
   }
 
   if (options.swagger !== false) {
-    decorators.push(ApiProperty({ type: String, ...options as ApiPropertyOptions }));
+    decorators.push(
+      ApiProperty({ type: String, ...(options as ApiPropertyOptions) }),
+    );
   }
 
   return applyDecorators(...decorators);
@@ -268,7 +282,7 @@ export function UUIDField(
         type: options.each ? [String] : String,
         format: 'uuid',
         isArray: options.each,
-        ...options as ApiPropertyOptions,
+        ...(options as ApiPropertyOptions),
       }),
     );
   }
@@ -321,7 +335,9 @@ export function DateField(
   }
 
   if (options.swagger !== false) {
-    decorators.push(ApiProperty({ type: Date, ...options as ApiPropertyOptions }));
+    decorators.push(
+      ApiProperty({ type: Date, ...(options as ApiPropertyOptions) }),
+    );
   }
 
   return applyDecorators(...decorators);
@@ -354,7 +370,7 @@ export function EnumField<TEnum extends object>(
       ApiProperty({
         enum: getEnum(),
         isArray: options.each,
-        ...options as ApiPropertyOptions,
+        ...(options as ApiPropertyOptions),
       }),
     );
   }
@@ -396,7 +412,7 @@ export function ClassField<TClass extends Constructor>(
     decorators.push(
       ApiProperty({
         type: () => getClass(),
-        ...options as ApiPropertyOptions,
+        ...(options as ApiPropertyOptions),
       }),
     );
   }

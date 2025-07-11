@@ -1,23 +1,12 @@
 import validateConfig from '@/utils/config/validate-config';
 import { registerAs } from '@nestjs/config';
-import {
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsString,
-  Max,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsString, ValidateIf } from 'class-validator';
 import { DatabaseConfig } from './database-config.type';
 
 class EnvironmentVariablesValidator {
   @ValidateIf((envValues) => envValues.DATABASE_URL)
   @IsString()
   DATABASE_URL: string;
-
 }
 
 export function getConfig(): DatabaseConfig {

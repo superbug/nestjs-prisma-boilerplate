@@ -2,9 +2,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { PrismaModule } from '@/database/prisma.module';
 import useMailFactory from '../../config/mail/mail.factory';
 import { MailService } from './mail.service';
-import { PrismaModule } from '@/database/prisma.module';
 
 @Global()
 @Module({
@@ -14,7 +14,7 @@ import { PrismaModule } from '@/database/prisma.module';
       inject: [ConfigService],
       useFactory: useMailFactory,
     }),
-    PrismaModule
+    PrismaModule,
   ],
   providers: [MailService],
   exports: [MailService],

@@ -29,9 +29,7 @@ export class CacheService {
     keyParams: CacheParam,
     options?: { disableResponseFilter?: false },
   ): Promise<number | null> {
-    const ttl = await this.cacheManager.ttl(
-      this._constructCacheKey(keyParams),
-    );
+    const ttl = await this.cacheManager.ttl(this._constructCacheKey(keyParams));
 
     if (!options?.disableResponseFilter && [-1, -2].includes(ttl)) {
       return null;

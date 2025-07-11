@@ -1,12 +1,10 @@
-import { ContextType, ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { FastifyRequest } from 'fastify';
 
 @Injectable()
 export class AppThrottlerGuard extends ThrottlerGuard {
   getRequestResponse(context: ExecutionContext) {
-    const type: ContextType = context.getType();
-
     return super.getRequestResponse(context);
   }
 

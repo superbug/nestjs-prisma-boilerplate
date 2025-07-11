@@ -15,10 +15,10 @@ const enableSentry = (err: Error, context: ExecutionContext) => {
   if (err instanceof HttpException) {
     return throwError(() => err);
   }
-  
+
   Sentry.withScope((scope) => {
     const request = context.getArgs()[0];
-    
+
     // Add request context
     if (request) {
       scope.setContext('request', {

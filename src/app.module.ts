@@ -22,7 +22,6 @@ import { FastifyAdapter } from '@bull-board/fastify';
 import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
 import { ApiModule } from './api/api.module';
 import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from './database/prisma.module';
 import { default as awsConfig } from './config/aws/aws.config';
 import {
   BULL_BOARD_PATH,
@@ -34,6 +33,7 @@ import { default as sentryConfig } from './config/sentry/sentry.config';
 import { default as throttlerConfig } from './config/throttler/throttler.config';
 import { default as useThrottlerFactory } from './config/throttler/throttler.factory';
 import { AppThrottlerGuard } from './config/throttler/throttler.guard';
+import { PrismaModule } from './database/prisma.module';
 import { default as useI18nFactory } from './i18n/i18n.factory';
 import { CacheModule as CacheManagerModule } from './shared/cache/cache.module';
 import { MailModule } from './shared/mail/mail.module';

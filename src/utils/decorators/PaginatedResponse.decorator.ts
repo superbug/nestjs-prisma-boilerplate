@@ -4,55 +4,55 @@ import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 
 class ResponseMetadata {
-    @ApiProperty()
-    total?: number; // total of records
+  @ApiProperty()
+  total?: number; // total of records
 
-    @ApiProperty()
-    limit?: number; // limit
+  @ApiProperty()
+  limit?: number; // limit
 
-    @ApiProperty()
-    offset?: number; // offset
+  @ApiProperty()
+  offset?: number; // offset
 
-    @ApiProperty()
-    total_pages?: number; // total of pages
+  @ApiProperty()
+  total_pages?: number; // total of pages
 
-    @ApiProperty()
-    has_next_page?: boolean; // has next page
+  @ApiProperty()
+  has_next_page?: boolean; // has next page
 }
 
 export class GetListResponse<T> {
-    @ApiProperty()
-    data: T[];
+  @ApiProperty()
+  data: T[];
 
-    @ApiProperty({
-        type: ResponseMetadata,
-    })
-    metadata: ResponseMetadata;
+  @ApiProperty({
+    type: ResponseMetadata,
+  })
+  metadata: ResponseMetadata;
 }
 
 export class GetOneResponse<T> {
-    @ApiProperty()
-    data: T;
+  @ApiProperty()
+  data: T;
 }
 
 export const ApiOkResponsePaginated = <DataDto extends Type<unknown>>(
-    dataDto: DataDto,
+  dataDto: DataDto,
 ) =>
-    applyDecorators(
-        ApiExtraModels(GetListResponse, dataDto),
-        ApiOkResponse({
-            schema: {
-                allOf: [
-                    { $ref: getSchemaPath(GetListResponse) },
-                    {
-                        properties: {
-                            data: {
-                                type: 'array',
-                                items: { $ref: getSchemaPath(dataDto) },
-                            },
-                        },
-                    },
-                ],
+  applyDecorators(
+    ApiExtraModels(GetListResponse, dataDto),
+    ApiOkResponse({
+      schema: {
+        allOf: [
+          { $ref: getSchemaPath(GetListResponse) },
+          {
+            properties: {
+              data: {
+                type: 'array',
+                items: { $ref: getSchemaPath(dataDto) },
+              },
             },
-        }),
-    );
+          },
+        ],
+      },
+    }),
+  );

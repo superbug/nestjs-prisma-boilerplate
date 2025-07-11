@@ -24,6 +24,8 @@ import {
   HOOK_KEY,
 } from '@/constants/auth.constant';
 import { Queue } from '@/constants/job.constant';
+import { PrismaModule } from '@/database/prisma.module';
+import { PrismaService } from '@/database/prisma.service';
 import { CacheModule } from '@/shared/cache/cache.module';
 import { CacheService } from '@/shared/cache/cache.service';
 import { ConfigService } from '@nestjs/config';
@@ -35,8 +37,6 @@ import type {
 } from 'fastify';
 import { AuthService } from './auth.service';
 import { BetterAuthService } from './better-auth.service';
-import { PrismaService } from '@/database/prisma.service';
-import { PrismaModule } from '@/database/prisma.module';
 
 const HOOKS = [
   { metadataKey: BEFORE_HOOK_KEY, hookType: 'before' as const },
@@ -185,7 +185,7 @@ export class AuthModule implements NestModule, OnModuleInit {
               cacheService,
               configService,
               authService,
-              prismaService
+              prismaService,
             });
             return betterAuth(config);
           },

@@ -1,10 +1,10 @@
 import { Queue } from '@/constants/job.constant';
+import { PrismaModule } from '@/database/prisma.module';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { EmailQueueEvents } from './email.events';
 import { EmailProcessor } from './email.processor';
 import { EmailQueueService } from './email.service';
-import { PrismaModule } from '@/database/prisma.module';
 
 @Module({
   imports: [

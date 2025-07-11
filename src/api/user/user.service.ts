@@ -4,8 +4,8 @@ import { CursorPaginatedDto } from '@/common/dto/cursor-pagination/paginated.dto
 import { OffsetPaginationDto } from '@/common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@/common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@/common/types/common.type';
-import { CurrentUserSession } from '@/decorators/auth/current-user-session.decorator';
 import { PrismaService } from '@/database/prisma.service';
+import { CurrentUserSession } from '@/decorators/auth/current-user-session.decorator';
 import { I18nTranslations } from '@/generated/i18n.generated';
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
@@ -29,7 +29,7 @@ export class UserService {
   ): Promise<OffsetPaginatedDto<UserDto>> {
     const { limit = 10, page = 1 } = dto;
     const offset = (page - 1) * limit;
-    
+
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
         where: { deletedAt: null },
@@ -50,9 +50,9 @@ export class UserService {
     reqDto: QueryUsersCursorDto,
   ): Promise<CursorPaginatedDto<UserDto>> {
     const { limit = 10, afterCursor, beforeCursor } = reqDto;
-    
+
     const whereCondition: any = { deletedAt: null };
-    
+
     if (afterCursor) {
       whereCondition.createdAt = { lt: new Date(afterCursor) };
     } else if (beforeCursor) {
@@ -67,13 +67,15 @@ export class UserService {
 
     const hasNext = users.length > limit;
     const hasPrevious = !!afterCursor;
-    
+
     if (hasNext) {
       users.pop(); // Remove the extra user
     }
 
-    const newAfterCursor = users.length > 0 ? users[users.length - 1].createdAt.toISOString() : null;
-    const newBeforeCursor = users.length > 0 ? users[0].createdAt.toISOString() : null;
+    const newAfterCursor =
+      users.length > 0 ? users[users.length - 1].createdAt.toISOString() : null;
+    const newBeforeCursor =
+      users.length > 0 ? users[0].createdAt.toISOString() : null;
 
     const metaDto = new CursorPaginationDto(
       users.length,
@@ -90,17 +92,17 @@ export class UserService {
     options?: { include?: any },
   ): Promise<UserDto> {
     const user = await this.prisma.user.findFirst({
-      where: { 
-        id, 
-        deletedAt: null 
+      where: {
+        id,
+        deletedAt: null,
       },
       ...options,
     });
-    
+
     if (!user) {
       throw new NotFoundException(this.i18nService.t('user.notFound'));
     }
-    
+
     return user as UserDto;
   }
 
@@ -108,22 +110,22 @@ export class UserService {
     const user = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
     });
-    
+
     if (!user) {
       throw new NotFoundException(this.i18nService.t('user.notFound'));
     }
-    
+
     await this.prisma.user.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
-    
+
     return HttpStatus.OK;
   }
 
   async getAllUsers(options?: { include?: any; where?: any }) {
     return this.prisma.user.findMany({
-      where: { 
+      where: {
         deletedAt: null,
         ...options?.where,
       },
@@ -159,7 +161,7 @@ export class UserService {
         lastName: dto.lastName,
       },
     });
-    
+
     return await this.findOneUser(userId);
   }
 }

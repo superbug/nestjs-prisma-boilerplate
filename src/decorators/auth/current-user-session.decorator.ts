@@ -1,9 +1,5 @@
 import { UserSession as UserSessionType } from '@/auth/auth.type';
-import {
-  ContextType,
-  createParamDecorator,
-  ExecutionContext,
-} from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { type FastifyRequest } from 'fastify';
 
 export type CurrentUserSession = UserSessionType & {
@@ -15,10 +11,9 @@ export const CurrentUserSession = createParamDecorator(
     data: keyof UserSessionType | 'headers',
     ctx: ExecutionContext,
   ): CurrentUserSession => {
-    const contextType: ContextType= ctx.getType();
-
-    let request: FastifyRequest & UserSessionType;
-    request = ctx.switchToHttp().getRequest();
+    const request: FastifyRequest & UserSessionType = ctx
+      .switchToHttp()
+      .getRequest();
 
     return data == null
       ? {

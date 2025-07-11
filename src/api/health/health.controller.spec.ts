@@ -1,5 +1,6 @@
 import { AuthService } from '@/auth/auth.service';
 import { GlobalConfig } from '@/config/config.type';
+import { PrismaService } from '@/database/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import {
   HealthCheckService,
@@ -9,7 +10,6 @@ import {
 } from '@nestjs/terminus';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from './health.controller';
-import { PrismaService } from '@/database/prisma.service';
 
 describe('HealthController', () => {
   let controller: HealthController;
@@ -55,13 +55,13 @@ describe('HealthController', () => {
     };
 
     prismaServiceValue = {
-        $queryRawUnsafe: jest.fn(),
-        $connect: jest.fn(),
-        $disconnect: jest.fn(),
-        $on: jest.fn(),
-        $use: jest.fn(),
-        $executeRawUnsafe: jest.fn(),
-        $transaction: jest.fn(),
+      $queryRawUnsafe: jest.fn(),
+      $connect: jest.fn(),
+      $disconnect: jest.fn(),
+      $on: jest.fn(),
+      $use: jest.fn(),
+      $executeRawUnsafe: jest.fn(),
+      $transaction: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -92,9 +92,9 @@ describe('HealthController', () => {
           useValue: authServiceValue,
         },
         {
-            provide: PrismaService,
-            useValue: prismaServiceValue,
-        }
+          provide: PrismaService,
+          useValue: prismaServiceValue,
+        },
       ],
     }).compile();
 

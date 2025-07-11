@@ -1,63 +1,93 @@
+/* eslint-disable no-console */
 import { PrismaClient, Role } from '@prisma/client';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { twoFactor, username } from 'better-auth/plugins';
+import { passkey } from 'better-auth/plugins/passkey';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Running seed...');
 
-  // Create Admin User
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
-      username: 'admin',
-      email: 'admin@example.com',
+  console.log('Checking envionment variables...');
+  const adminEmail = process.env.APP_ADMIN_EMAIL;
+  if (!adminEmail) {
+    console.error(
+      '❌ APP_ADMIN_EMAIL is not set in the environment variables.',
+    );
+    process.exit(1);
+  }
+
+  const password = process.env.APP_ADMIN_PASSWORD;
+  if (!password) {
+    console.error(
+      '❌ APP_ADMIN_PASSWORD is not set in the environment variables.',
+    );
+    process.exit(1);
+  }
+
+  const auth = betterAuth({
+    emailAndPassword: {
+      enabled: true,
+    },
+    plugins: [
+      username({
+        usernameValidator: () => {
+          return true;
+        },
+      }),
+      twoFactor({
+        schema: {
+          twoFactor: {
+            modelName: 'two_factors',
+          },
+        },
+      }),
+      passkey({
+        rpName: 'Boilerplate API',
+      }),
+    ],
+    user: {
+      fields: {
+        name: 'firstName',
+        emailVerified: 'isEmailVerified',
+      },
+    },
+    database: prismaAdapter(prisma, {
+      provider: 'postgresql',
+    }),
+  });
+
+  const res = await auth.api.signUpEmail({
+    body: {
+      email: adminEmail,
+      name: 'Admin User',
+      username: adminEmail,
+      password: password,
+    },
+  });
+
+  console.log('🌟 User created with success!');
+
+  await prisma.user.update({
+    where: { id: res.user.id },
+    data: {
       role: Role.Admin,
-      firstName: 'Admin',
-      lastName: 'User',
       isEmailVerified: true,
     },
   });
+  console.log('✅ User updated with success!');
 
-  // Create Account for Admin User (for credential-based auth)
-  await prisma.account.upsert({
-    where: { id: 'admin-account-1' },
-    update: {},
-    create: {
-      id: 'admin-account-1',
-      userId: adminUser.id,
-      accountId: adminUser.id,
-      providerId: 'credential',
-      password: '$2a$10$YourHashedPasswordHere', // Replace with actual hashed password
+  // Delete the session for the user
+  console.log('Delete the session for the user...');
+  await prisma.session.deleteMany({
+    where: {
+      userId: res.user.id,
     },
   });
 
-  // Create Regular User
-  const regularUser = await prisma.user.upsert({
-    where: { email: 'user@example.com' },
-    update: {},
-    create: {
-      username: 'user',
-      email: 'user@example.com',
-      role: Role.User,
-      firstName: 'Regular',
-      lastName: 'User',
-      isEmailVerified: true,
-    },
-  });
-
-  // Create Account for Regular User
-  await prisma.account.upsert({
-    where: { id: 'user-account-1' },
-    update: {},
-    create: {
-      id: 'user-account-1',
-      userId: regularUser.id,
-      accountId: regularUser.id,
-      providerId: 'credential',
-      password: '$2a$10$YourHashedPasswordHere', // Replace with actual hashed password
-    },
-  });
+  console.log('✅ User session deleted successfully!');
 
   console.log('✅ Seed completed successfully!');
 }

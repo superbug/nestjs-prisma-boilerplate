@@ -14,7 +14,7 @@ export function IsMs(validationOptions?: ValidationOptions): PropertyDecorator {
           if (typeof value !== 'string' || value.length === 0) {
             return false;
           }
-          
+
           try {
             const result = ms(value as any);
             return typeof result === 'number' && !isNaN(result);
