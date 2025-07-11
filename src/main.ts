@@ -1,4 +1,4 @@
-import fastifyCookie from '@fastify/cookie';
+import fastifyCookie, { FastifyCookieOptions } from '@fastify/cookie';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -59,7 +59,7 @@ async function bootstrap() {
     secret: configService.getOrThrow('auth.authSecret', {
       infer: true,
     }) as string,
-  });
+  } as FastifyCookieOptions);
 
   app.setGlobalPrefix('api');
 
