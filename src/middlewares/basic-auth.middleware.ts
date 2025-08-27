@@ -1,5 +1,5 @@
 import { getConfig } from '@/config/auth/auth.config';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 export async function basicAuthMiddleware(
   req: FastifyRequest,

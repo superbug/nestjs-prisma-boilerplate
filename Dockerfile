@@ -1,10 +1,10 @@
-ARG NODE_IMAGE=node:22-slim
+ARG NODE_IMAGE=swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/node:22-slim
 
 FROM ${NODE_IMAGE} AS base
 
 RUN apt-get update && apt-get install -y procps
 
-RUN npm install -g pnpm@10.12.3
+RUN npm install -g pnpm@10.12.3 --registry https://registry.npmmirror.com/
 
 # Development stage
 FROM base AS development
@@ -14,8 +14,8 @@ RUN chown -R node:node /app
 COPY --chown=node:node package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install all dependencies (including devDependencies)
-RUN pnpm fetch --frozen-lockfile
-RUN pnpm install --frozen-lockfile
+RUN pnpm fetch --frozen-lockfile --registry https://registry.npmmirror.com/
+RUN pnpm install --frozen-lockfile --registry https://registry.npmmirror.com/
 
 # Bundle app source
 COPY --chown=node:node . .
@@ -47,8 +47,8 @@ RUN pnpm prisma:migrate:deploy
 # Removes unnecessary packages and re-install only production dependencies
 ENV NODE_ENV production
 RUN pnpm prune --prod
-RUN pnpm fetch --frozen-lockfile
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm fetch --frozen-lockfile --registry https://registry.npmmirror.com/
+RUN pnpm install --frozen-lockfile --prod --registry https://registry.npmmirror.com/
 
 USER node
 
@@ -56,7 +56,7 @@ USER node
 FROM ${NODE_IMAGE} AS production
 WORKDIR /app
 
-RUN npm install -g pm2
+RUN npm install -g pm2 --registry https://registry.npmmirror.com/
 
 RUN chown -R node:node /app
 

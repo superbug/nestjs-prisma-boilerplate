@@ -1,2 +1,12 @@
 onlyBuiltDependencies:
+  - '@nestjs/core'
   - '@prisma/client'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - '@swc/core'
+  - bufferutil
+  - esbuild
+  - msgpackr-extract
+  - nestjs-pino
+  - prisma
+  - unrs-resolver

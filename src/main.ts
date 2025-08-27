@@ -1,4 +1,4 @@
-import fastifyCookie, { FastifyCookieOptions } from '@fastify/cookie';
+import fastifyCookie from '@fastify/cookie';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -55,11 +55,11 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService<GlobalConfig>);
 
-  await app.register(fastifyCookie, {
+  await app.register(fastifyCookie as any, {
     secret: configService.getOrThrow('auth.authSecret', {
       infer: true,
     }) as string,
-  } as FastifyCookieOptions);
+  });
 
   app.setGlobalPrefix('api');
 
@@ -149,7 +149,7 @@ async function bootstrap() {
   app
     .getHttpAdapter()
     .getInstance()
-    .addHook('onRequest', async (req, reply) => {
+    .addHook('onRequest', async (req: any, reply: any) => {
       const pathsToIntercept = [
         `/api${BULL_BOARD_PATH}`, // Bull-Board
         SWAGGER_PATH, // Swagger Docs
